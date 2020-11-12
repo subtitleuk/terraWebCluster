@@ -23,7 +23,7 @@ resource "aws_autoscaling_group" "ags" {
   health_check_type         = "ALB"
   desired_capacity          = 1
   force_delete              = true
-#vpc_zone_identifier       = [aws_subnet.subnet_1.id, aws_subnet.subnet_2.id]
+  vpc_zone_identifier       = [network.aws_subnet.subnet_1.id, network.aws_subnet.subnet_2.id]
 
   initial_lifecycle_hook {
     name                 = "foobar"

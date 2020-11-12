@@ -1,6 +1,18 @@
+data "aws_ami" "amazon-linux-2" {
+  most_recent      = true
+  owners           = ["amazon"]
+
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm*"]
+  }
+}
+
+
 resource "aws_launch_template" "foobar" {
   name_prefix   = "foobar"
-  image_id      = "ami-1a2b3c"
+  image_id      = "${data.aws_ami.amazon-linux-2.id}"
   instance_type = "t2.micro"
 }
 
