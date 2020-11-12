@@ -4,6 +4,13 @@ data "aws_availability_zones" "azs" {
   state    = "available"
 }
 
+
+resource "aws_launch_template" "l_temp1" {
+  name_prefix   = "l_temp1"
+  image_id      = "ami-1a2b3c"
+  instance_type = "t2.micro"
+}
+
 # ---------------------------------------------------------------------------------------------------------------------
 # CREATE THE AUTO SCALING GROUP
 # ---------------------------------------------------------------------------------------------------------------------
@@ -16,14 +23,18 @@ resource "aws_autoscaling_group" "ags" {
   health_check_type         = "ALB"
   desired_capacity          = 1
   force_delete              = true
-  launch_configuration      = aws_launch_configuration.example.id
-  vpc_zone_identifier       = [aws_subnet.subnet_1.id, aws_subnet.subnet_2.id]
+#vpc_zone_identifier       = [aws_subnet.subnet_1.id, aws_subnet.subnet_2.id]
 
   initial_lifecycle_hook {
     name                 = "foobar"
     default_result       = "CONTINUE"
     heartbeat_timeout    = 2000
     lifecycle_transition = "autoscaling:EC2_INSTANCE_LAUNCHING"
+
+    launch_template {
+      id      = aws_launch_template.l_temp1.id
+      version = "$Latest"
+    }
 
     tag {
       key                 = "Name"
