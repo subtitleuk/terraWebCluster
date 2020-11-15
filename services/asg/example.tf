@@ -1,3 +1,14 @@
+data "terraform_remote_state" "network" {
+  backend = "s3"
+
+  config = {
+    bucket = "terraformstatebucketbh14b1120"
+    key    = "terraformstatefile"
+    region = "us-east-1"
+  }
+}
+
+
 data "aws_ami" "amazon-linux-2" {
   most_recent = true
   owners      = ["amazon"]
@@ -20,16 +31,16 @@ resource "aws_key_pair" "master-key" {
 }
 
 resource "aws_launch_template" "master_asg_template" {
-  name_prefix   = "master_asg_template"
-  image_id      = "${data.aws_ami.amazon-linux-2.id}"
-instance_initiated_shutdown_behavior = "terminate"  
-instance_type = "t2.micro"
-  key_name      = "aws_key_pair.master-key.key_name"
-  vpc_security_group_ids = ["sg-0e290496a393dc82b"]
+  name_prefix                          = "master_asg_template"
+  image_id                             = "${data.aws_ami.amazon-linux-2.id}"
+  instance_initiated_shutdown_behavior = "terminate"
+  instance_type                        = "t2.micro"
+  key_name                             = "aws_key_pair.master-key.key_name"
+  vpc_security_group_ids               = "${data.terraform_remote_state.network.sg_webserver_id}"
 
-    tags = {
-      Name = "terraweb"
-    }
+  tags = {
+    Name = "terraweb"
+  }
 }
 
 resource "aws_autoscaling_group" "master_asg" {
