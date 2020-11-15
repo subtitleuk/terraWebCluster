@@ -5,7 +5,7 @@ resource "aws_vpc" "vpc_master" {
   enable_dns_support   = true
   enable_dns_hostnames = true
   tags = {
-    Name = "master-vpc"
+    Name = "master_vpc"
   }
 
 }
@@ -14,6 +14,12 @@ resource "aws_vpc" "vpc_master" {
 resource "aws_internet_gateway" "igw" {
   provider = aws
   vpc_id   = aws_vpc.vpc_master.id
+  tags = {
+    Name = "master_igw"
+  }
+
+
+
 }
 
 #Get all available AZ's in VPC for master region
@@ -29,6 +35,10 @@ resource "aws_subnet" "subnet_1" {
   availability_zone = element(data.aws_availability_zones.azs.names, 0)
   vpc_id            = aws_vpc.vpc_master.id
   cidr_block        = "10.0.1.0/24"
+  tags = {
+    Name = "master_subnet_1"
+  }
+
 }
 
 
@@ -38,6 +48,11 @@ resource "aws_subnet" "subnet_2" {
   vpc_id            = aws_vpc.vpc_master.id
   availability_zone = element(data.aws_availability_zones.azs.names, 1)
   cidr_block        = "10.0.2.0/24"
+  tags = {
+    Name = "master_subnet_2"
+  }
+
+
 }
 
 #Create SG for allowing TCP/80 and TCP/443 from * and all ports out
@@ -60,6 +75,14 @@ resource "aws_security_group" "webserver-sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  ingress {
+    description = "allow anyone on port 22 for ssh"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0

@@ -4,3 +4,4 @@ variable "cluster_name" {
   default     = "ha_cluster"
 }
 
+
