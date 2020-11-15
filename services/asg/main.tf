@@ -1,14 +1,3 @@
-data "terraform_remote_state" "network" {
-  backend = "s3"
-
-  config = {
-    bucket = "terraformstatebucketbh14b1120"
-    key    = "terraformstatefile"
-    region = "us-east-1"
-  }
-}
-
-
 data "aws_ami" "amazon-linux-2" {
   most_recent = true
   owners      = ["amazon"]
@@ -36,7 +25,7 @@ resource "aws_launch_template" "master_asg_template" {
   instance_initiated_shutdown_behavior = "terminate"
   instance_type                        = "t2.micro"
   key_name                             = "aws_key_pair.master-key.key_name"
-  vpc_security_group_ids               = "${data.terraform_remote_state.network.sg_webserver_id}"
+  vpc_security_group_ids               = [var.sg_id]
 
   tags = {
     Name = "terraweb"

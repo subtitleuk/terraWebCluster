@@ -13,5 +13,7 @@ module "network" {
 
 module "asg" {
   source = "./services/asg"
+sg_id = module.network.net_sg_webserver_id
+
 }
 
