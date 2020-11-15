@@ -1,6 +1,16 @@
 variable "sg_id" {
-  description = "The name to use for all the cluster resources"
+  description = "Security group ID for connecting the load balancer"
   type        = string
 }
 
+variable "sub1_id" {
+  description = "Primary availability group subnet - subnet_1"
+  type        = string
+}
+
+
+variable "sub2_id" {
+  description = "Secondary availability group subnet - subnet_2"
+  type        = string
+}
 

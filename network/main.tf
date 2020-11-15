@@ -1,4 +1,5 @@
 #Create VPC in us-east-1
+##################################################################
 resource "aws_vpc" "vpc_master" {
   provider             = aws
   cidr_block           = "10.0.0.0/16"
@@ -7,29 +8,18 @@ resource "aws_vpc" "vpc_master" {
   tags = {
     Name = "master_vpc"
   }
-
 }
 
-#Create IGW in us-east-1
-resource "aws_internet_gateway" "igw" {
-  provider = aws
-  vpc_id   = aws_vpc.vpc_master.id
-  tags = {
-    Name = "master_igw"
-  }
 
-
-
-}
-
-#Get all available AZ's in VPC for master region
+#Get all available AZ's in Master VPC
+##################################################################
 data "aws_availability_zones" "azs" {
   provider = aws
   state    = "available"
 }
 
-
-#Create subnet # 1 in us-east-1
+#Create subnet # 1 in Master VPC
+##################################################################
 resource "aws_subnet" "subnet_1" {
   provider          = aws
   availability_zone = element(data.aws_availability_zones.azs.names, 0)
@@ -38,11 +28,11 @@ resource "aws_subnet" "subnet_1" {
   tags = {
     Name = "master_subnet_1"
   }
-
 }
 
 
-#Create subnet #2  in us-east-1
+#Create subnet #2 in Master VPC
+##################################################################
 resource "aws_subnet" "subnet_2" {
   provider          = aws
   vpc_id            = aws_vpc.vpc_master.id
@@ -51,11 +41,50 @@ resource "aws_subnet" "subnet_2" {
   tags = {
     Name = "master_subnet_2"
   }
-
-
 }
 
+
+
+#Create IGW in Master VPC
+##################################################################
+resource "aws_internet_gateway" "igw" {
+  provider = aws
+  vpc_id   = aws_vpc.vpc_master.id
+  tags = {
+    Name = "Master VPC - Internet Gateway"
+  }
+}
+
+
+
+#Create Routing tables in Master VPC
+##################################################################
+resource "aws_route_table" "my_vpc_public" {
+  vpc_id = aws_vpc.vpc_master.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.igw.id
+  }
+
+  tags = {
+    Name = "Public Subnets Route Table for My VPC"
+  }
+}
+
+resource "aws_route_table_association" "my_vpc_us_east_1a_public" {
+  subnet_id      = aws_subnet.subnet_1.id
+  route_table_id = aws_route_table.my_vpc_public.id
+}
+
+resource "aws_route_table_association" "my_vpc_us_east_1b_public" {
+  subnet_id      = aws_subnet.subnet_2.id
+  route_table_id = aws_route_table.my_vpc_public.id
+}
+
+
 #Create SG for allowing TCP/80 and TCP/443 from * and all ports out
+##################################################################
 resource "aws_security_group" "webserver-sg" {
   provider    = aws
   name        = "webserver-sg"
@@ -92,6 +121,7 @@ resource "aws_security_group" "webserver-sg" {
 }
 
 #Create SG for LB, only TCP/80,TCP/443 and outbound access
+##################################################################
 resource "aws_security_group" "lb-sg" {
   provider    = aws
   name        = "lb-sg"
@@ -119,3 +149,33 @@ resource "aws_security_group" "lb-sg" {
   }
 }
 
+#Create load balancer
+##################################################################
+resource "aws_elb" "web_elb" {
+  name = "web-elb"
+  security_groups = [
+    aws_security_group.lb-sg.id
+  ]
+  subnets = [
+    aws_subnet.subnet_1.id,
+    aws_subnet.subnet_2.id
+  ]
+
+  cross_zone_load_balancing = true
+
+  health_check {
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout             = 3
+    interval            = 30
+    target              = "HTTP:80/"
+  }
+
+  listener {
+    lb_port           = 80
+    lb_protocol       = "http"
+    instance_port     = "80"
+    instance_protocol = "http"
+  }
+
+}
