@@ -141,13 +141,13 @@ resource "aws_security_group" "lb-sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
- ingress {
-  description = "Allow 22 from anywhere for redirection"
-  from_port   = 22
-  to_port     = 22
-  protocol    = "tcp"
-  cidr_blocks = ["0.0.0.0/0"]
-}
+  ingress {
+    description = "Allow 22 from anywhere for redirection"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
   egress {
     from_port   = 0
     to_port     = 0
@@ -175,7 +175,7 @@ resource "aws_elb" "web_elb" {
     unhealthy_threshold = 2
     timeout             = 3
     interval            = 30
-    target              = "TCP:22/"
+    target              = "TCP:22"
   }
 
   listener {

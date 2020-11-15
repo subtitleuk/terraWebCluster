@@ -10,4 +10,7 @@ output "net_subnet_2_id" {
   value = "${aws_subnet.subnet_2.id}"
 }
 
-
+output "net_elb_id" {
+  description = "DNS Name of the ELB"
+  value       = "${aws_elb.web_elb.id}"
+}

@@ -13,4 +13,7 @@ variable "sub2_id" {
   description = "Secondary availability group subnet - subnet_2"
   type        = string
 }
-
+variable "elb_id" {
+  description = "E. Load Balancer"
+  type        = string
+}
