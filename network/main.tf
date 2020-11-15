@@ -83,7 +83,7 @@ resource "aws_route_table_association" "my_vpc_us_east_1b_public" {
 }
 
 
-#Create SG for allowing TCP/80 and TCP/443 from * and all ports out
+#Create SG for allowingTCP/22, TCP/80 and TCP/443 from * and all ports out
 ##################################################################
 resource "aws_security_group" "webserver-sg" {
   provider    = aws
@@ -120,7 +120,7 @@ resource "aws_security_group" "webserver-sg" {
   }
 }
 
-#Create SG for LB, only TCP/80,TCP/443 and outbound access
+#Create SG for LB, only TCP/22 TCP/80,TCP/443 and outbound access
 ##################################################################
 resource "aws_security_group" "lb-sg" {
   provider    = aws
@@ -141,6 +141,13 @@ resource "aws_security_group" "lb-sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+ ingress {
+  description = "Allow 22 from anywhere for redirection"
+  from_port   = 22
+  to_port     = 22
+  protocol    = "tcp"
+  cidr_blocks = ["0.0.0.0/0"]
+}
   egress {
     from_port   = 0
     to_port     = 0
@@ -168,14 +175,14 @@ resource "aws_elb" "web_elb" {
     unhealthy_threshold = 2
     timeout             = 3
     interval            = 30
-    target              = "HTTP:80/"
+    target              = "TCP:22/"
   }
 
   listener {
-    lb_port           = 80
-    lb_protocol       = "http"
-    instance_port     = "80"
-    instance_protocol = "http"
+    lb_port           = 22
+    lb_protocol       = "TCP"
+    instance_port     = "22"
+    instance_protocol = "TCP"
   }
 
 }

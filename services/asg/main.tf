@@ -27,7 +27,7 @@ resource "aws_key_pair" "master-key" {
 ###############################################################################
 resource "aws_launch_template" "master_asg_template" {
   name_prefix                          = "master_asg_template"
-  image_id                             = "${data.aws_ami.amazon-linux-2.id}"
+  image_id                             = data.aws_ami.amazon-linux-2.id
   instance_initiated_shutdown_behavior = "terminate"
   instance_type                        = "t2.micro"
   vpc_security_group_ids               = [var.sg_id]
@@ -45,7 +45,7 @@ resource "aws_launch_template" "master_asg_template" {
 ###############################################################################
 resource "aws_autoscaling_group" "master_asg" {
   vpc_zone_identifier = [var.sub1_id]
-  desired_capacity    = 1
+  desired_capacity    = 3
   max_size            = 3
   min_size            = 1
 
