@@ -23,6 +23,7 @@ resource "aws_key_pair" "master-key" {
   public_key = file("~/.ssh/id_rsa.pub")
 }
 
+
 # Create template to launch ASG
 ###############################################################################
 resource "aws_launch_template" "master_asg_template" {
@@ -32,6 +33,15 @@ resource "aws_launch_template" "master_asg_template" {
   instance_type                        = "t2.micro"
   vpc_security_group_ids               = [var.sg_id]
   key_name                             = "terrakey"
+
+  provisioner "remote-exec" {
+    inline = [
+      "yum -y install httpd",
+      "systemctl enable httpd",
+      "systemctl start httpd",
+    ]
+  }
+
 
 
   tags = {
@@ -45,7 +55,7 @@ resource "aws_launch_template" "master_asg_template" {
 ###############################################################################
 resource "aws_autoscaling_group" "master_asg" {
   vpc_zone_identifier = [var.sub1_id]
-  desired_capacity    = 3
+  desired_capacity    = 1
   max_size            = 3
   min_size            = 1
 
